@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/IdeaProjects/LEI/IA/Projecto_IA_Pong_Código_Base_2022_24.iml" filepath="$USER_HOME$/IdeaProjects/LEI/IA/Projecto_IA_Pong_Código_Base_2022_24.iml" />
+      <module fileurl="file://$PROJECT_DIR$/IA_Project.iml" filepath="$PROJECT_DIR$/IA_Project.iml" />
     </modules>
   </component>
 </project>

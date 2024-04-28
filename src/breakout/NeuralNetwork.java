@@ -11,10 +11,10 @@ public class NeuralNetwork implements GameController {
     private int hiddenDim;
     private int outputDim;
 
-    private double[][] hiddenWeights;
-    private double[] hiddenBiases;
-    private double[][] outputWeights;
-    private double[] outputBiases;
+    public double[][] hiddenWeights;
+    public double[] hiddenBiases;
+    public double[][] outputWeights;
+    public double[] outputBiases;
 
 
     public NeuralNetwork(int inputDim, int hiddenDim, int outputDim) {

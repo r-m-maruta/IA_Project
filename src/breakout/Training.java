@@ -10,12 +10,12 @@ import java.util.stream.IntStream;
 public class Training {
 
     private final int popSize = 2000;
-    double[][] popNN;
+    public double[][] popNN;
     private static double[] fitnessScores;
     private int maxGenerations = 200;
     private double[] bestOverallNetwork;
     private double bestOverallScore = Double.MIN_VALUE;
-
+    private int totalSizeGenome = 62;
 
     public Training() {
         initializePop();
@@ -48,7 +48,7 @@ public class Training {
         this.popNN = new double[popSize][];
         for (int i = 0; i < popSize; i++) {
             NeuralNetwork nn = new NeuralNetwork(Commons.BREAKOUT_STATE_SIZE, Commons.HIDDEN_LAYERS, Commons.BREAKOUT_NUM_ACTIONS);
-            popNN[i] = nn.getNeuralNetwork();
+            this.popNN[i] = nn.getNeuralNetwork();
         }
     }
 
@@ -140,13 +140,14 @@ public class Training {
     }
 
     // Bit Flip Mutation
-    private void bitFlipMutation(double[] genes) {
+    private double[] bitFlipMutation(double[] genes) {
         Random rand = new Random();
         for (int i = 0; i < genes.length; i++) {
-            if (rand.nextDouble() < 0.1) {
+            if (rand.nextDouble() < 0.2) {
                 genes[i] += rand.nextGaussian() * 0.2; // Small Gaussian noise
             }
         }
+        return genes;
     }
 
 
@@ -176,7 +177,7 @@ public class Training {
     }
 
 
-
+    /*
     public void train() {
         for (int generation = 0; generation < maxGenerations; generation++) {
             fitnessScores = new double[popSize]; // Recalculate fitness scores for the new generation
@@ -235,14 +236,90 @@ public class Training {
         saveBestNetwork(bestOverallNetwork);
     }
 
+     */
+
 
     public double[] getBestOverallNetwork() {
         return bestOverallNetwork;
     }
 
+    private void train(){
+        double[] fitnesPop = new double[popSize];
+        int positionBest = 0;
+        int positionBest1 = 0;
+
+        for(int i = 0; i < popSize; i++) {
+            NeuralNetwork nn = new NeuralNetwork(Commons.BREAKOUT_STATE_SIZE, Commons.HIDDEN_LAYERS, Commons.BREAKOUT_NUM_ACTIONS, this.popNN[i]);
+            BreakoutBoard gameBoard = new BreakoutBoard(nn, false, 5);
+            gameBoard.runSimulation();
+            double fitness = gameBoard.getFitness();
+            fitnesPop[i] = fitness;
+            if (fitness > fitnesPop[positionBest1]) {
+                if (fitness > fitnesPop[positionBest]) {
+                    positionBest = i;
+                } else {
+                    positionBest1 = i;
+                }
+            }
+        }
+        double[] best = Arrays.copyOf(popNN[positionBest], popNN[positionBest].length);
+        double[] best1 = Arrays.copyOf(popNN[positionBest1], popNN[positionBest1].length);
+        double[][] nextPop = new double[popSize][];
+        System.out.println(fitnesPop[positionBest]);
+        System.out.println(fitnesPop[positionBest1]);
+        double sum = 0;
+        for(int i = 0; i< popSize; i++){
+            sum += fitnesPop[i];
+        }
+        System.out.println(sum/popSize);
+        System.out.println("--------");
+
+        for(int j = 0; j < popSize; j++){
+            double[] child;
+            if(j < 0.4 * popSize) {
+                child = crossoverUniform(best, best1);
+            }else{
+                child = crossoverUniform(popNN[randomMax(popSize)],popNN[randomMax(popSize)]);
+            }
+            nextPop[j] = bitFlipMutation(child);
+        }
+        this.popNN = nextPop;
+
+
+
+    }
+    private int randomMax(int max){
+        Random rand = new Random();
+        return rand.nextInt(max);
+    }
+
     public static void main(String[] args) {
+        Training training = new Training();
+        for(int i = 0; i <1000; i++){
+            training.train();
+        }
+        /*
+        NeuralNetwork nn = new NeuralNetwork(Commons.BREAKOUT_STATE_SIZE, Commons.HIDDEN_LAYERS, Commons.BREAKOUT_NUM_ACTIONS, training.popNN[0]);
+        System.out.println(Arrays.toString(nn.hiddenBiases));
+        System.out.println(Arrays.toString(nn.outputBiases));
+        System.out.println(Arrays.deepToString(nn.hiddenWeights));
+        System.out.println(Arrays.deepToString(nn.outputWeights));
+
+        NeuralNetwork nnl = new NeuralNetwork(Commons.BREAKOUT_STATE_SIZE, Commons.HIDDEN_LAYERS, Commons.BREAKOUT_NUM_ACTIONS, training.popNN[2]);
+        Breakout bord = new Breakout(nnl,5);
+
+         */
+        //bord.runSimulation();
+        //System.out.println(bord.getFitness());
+        /*NeuralNetwork nn = new NeuralNetwork(Commons.BREAKOUT_STATE_SIZE, Commons.HIDDEN_LAYERS, Commons.BREAKOUT_NUM_ACTIONS, training.popNN[2]);
+        BreakoutBoard gameBoard = new BreakoutBoard(nn, false, 5); //(int) System.currentTimeMillis()
+        gameBoard.runSimulation();
+        System.out.println(gameBoard.getFitness());
+        /*
         Training training = new Training(); // You can also pass maxGenerations here
         training.train(); // This starts the training process and eventually saves the best network
         System.out.println("Training completed. Best network saved.");
+        */
+
     }
 }
